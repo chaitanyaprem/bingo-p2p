@@ -7,19 +7,19 @@
 #define TIMEOUT_SECONDS 600
 #define TEXT_TO_LOOK_FOR @"Welcome to React"
 
-@interface testTests : XCTestCase
+@interface bingop2pTests : XCTestCase
 
 @end
 
-@implementation testTests
+@implementation bingop2pTests
 
-- (BOOL)findSubviewInView:(UIView *)view matching:(BOOL (^)(UIView *view))test
+- (BOOL)findSubviewInView:(UIView *)view matching:(BOOL (^)(UIView *view))bingop2p
 {
-  if (test(view)) {
+  if (bingop2p(view)) {
     return YES;
   }
   for (UIView *subview in [view subviews]) {
-    if ([self findSubviewInView:subview matching:test]) {
+    if ([self findSubviewInView:subview matching:bingop2p]) {
       return YES;
     }
   }
