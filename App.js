@@ -18,15 +18,18 @@ const totalNumbers = 15; // Total numbers on the board
 
 
 const generateRandomBoard = () => {
+  const boardValues = []
   const board = Array.from({ length: boardSize }, () => Array(columnSize).fill(null));
-  const columnIndices = Array.from({ length: columnSize }, (_, index) => index);
+  var columnIndices = Array.from({ length: columnSize }, (_, index) => index);
   for (let i = 0; i < totalNumbers; i++) {
+    if (columnIndices.length == 0) {
+        columnIndices = Array.from({ length: columnSize }, (_, index) => index);
+    }
     const randomColumnIndex = Math.floor(Math.random() * columnIndices.length);
     const columnIndex = columnIndices.splice(randomColumnIndex, 1)[0];
     const range = columnRanges[columnIndex];
     let randomCellIndex;
     let attempts = 0; // Track the number of attempts
-    //TODO: Fix this number of attempts
     do {
       randomCellIndex = Math.floor(Math.random() * boardSize);
       attempts++;
@@ -35,8 +38,12 @@ const generateRandomBoard = () => {
       console.log('Failed to find an empty cell after 10 attempts.');
       break;
     }
-    const randomNum = Math.floor(Math.random() * (range.end - range.start + 1)) + range.start;
+    var randomNum = Math.floor(Math.random() * (range.end - range.start + 1)) + range.start;
+    if (boardValues.includes(randomNum)){
+      randomNum = Math.floor(Math.random() * (range.end - range.start + 1)) + range.start;
+    }
     board[randomCellIndex][columnIndex] = randomNum;
+    boardValues.push(randomNum)
   }
   return board;
 };
@@ -49,7 +56,7 @@ const App = () => {
   const [winningRows, setWinningRows] = useState([]);
   const [winningColumns, setWinningColumns] = useState([]);
   const [winningBoard, setWinningBoard] = useState(false);
-  const [gameFinished, setGameFinished] = useState(false);
+  //const [gameFinished, setGameFinished] = useState(false);
 
   const markCell = (rowIndex, columnIndex) => {
     const number = board[rowIndex][columnIndex];
@@ -144,6 +151,7 @@ const App = () => {
       </View>
       <View style={styles.currentNumberContainer}>
         <Text style={styles.currentNumberText}>Current Number: {currentNumber}</Text>
+        {/* <Text style={styles.recentNumbers}>Last 5 called numbers:{recentCalledNumbers.join(', ')}</Text> */}
       </View>
       {errorMessage && (
         <View style={styles.errorContainer}>
