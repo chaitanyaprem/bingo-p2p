@@ -45,6 +45,7 @@ const generateRandomBoard = () => {
     board[randomCellIndex][columnIndex] = randomNum;
     boardValues.push(randomNum)
   }
+  //console.log(board)
   return board;
 };
 
@@ -56,11 +57,12 @@ const App = () => {
   const [winningRows, setWinningRows] = useState([]);
   const [winningColumns, setWinningColumns] = useState([]);
   const [winningBoard, setWinningBoard] = useState(false);
+  const [calledNumbers, setCalledNumbers] = useState([]);
   //const [gameFinished, setGameFinished] = useState(false);
 
   const markCell = (rowIndex, columnIndex) => {
     const number = board[rowIndex][columnIndex];
-    if (number === currentNumber) {
+    if (calledNumbers.includes(number)) {
       const cellId = `${rowIndex}-${columnIndex}`;
       if (!selectedCells.includes(cellId)) {
         setSelectedCells((prevSelectedCells) => [...prevSelectedCells, cellId]);
@@ -106,14 +108,22 @@ const App = () => {
     setWinningColumns([]);
     setWinningBoard(false);
   };
+  
   useEffect(() => {
-    const randomNum = Math.floor(Math.random() * (columnRanges[columnSize - 1].end - columnRanges[0].start + 1)) + columnRanges[0].start;
+    var randomNum = -1
+    do {
+      randomNum = Math.floor(Math.random() * (columnRanges[columnSize - 1].end - columnRanges[0].start + 1)) + columnRanges[0].start;
+    }while (calledNumbers.includes(randomNum))
     setCurrentNumber(randomNum);
+    setCalledNumbers((prevCalledNumbers)=>[...prevCalledNumbers,randomNum])
     setErrorMessage(null);
 
     const interval = setInterval(() => {
-      const randomNum = Math.floor(Math.random() * (columnRanges[columnSize - 1].end - columnRanges[0].start + 1)) + columnRanges[0].start;
+      do{
+      randomNum = Math.floor(Math.random() * (columnRanges[columnSize - 1].end - columnRanges[0].start + 1)) + columnRanges[0].start;
+      }while (calledNumbers.includes(randomNum))
       setCurrentNumber(randomNum);
+      setCalledNumbers((prevCalledNumbers)=>[...prevCalledNumbers,randomNum])
       setErrorMessage(null);
     }, 5000); // Change the number here to set the interval in milliseconds (e.g., 5000 = 5 seconds)
 
@@ -151,7 +161,7 @@ const App = () => {
       </View>
       <View style={styles.currentNumberContainer}>
         <Text style={styles.currentNumberText}>Current Number: {currentNumber}</Text>
-        {/* <Text style={styles.recentNumbers}>Last 5 called numbers:{recentCalledNumbers.join(', ')}</Text> */}
+        { <Text style={styles.recentNumbers}>Previously called numbers:{calledNumbers.join(', ')}</Text> }
       </View>
       {errorMessage && (
         <View style={styles.errorContainer}>
