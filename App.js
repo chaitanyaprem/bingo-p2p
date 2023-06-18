@@ -2,21 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 const boardSize = 3; // 3x9 Bingo board
-const columnSize = 9; // Number of columns
+const columnSize = 4; // Number of columns
 const columnRanges = [
   { start: 1, end: 9 },
   { start: 10, end: 19 },
   { start: 20, end: 29 },
   { start: 30, end: 39 },
-  { start: 40, end: 49 },
+  /*{ start: 40, end: 49 },
   { start: 50, end: 59 },
   { start: 60, end: 69 },
   { start: 70, end: 79 },
-  { start: 80, end: 90 },
+  { start: 80, end: 90 },*/
 ];
-const totalNumbers = 15; // Total numbers on the board
+const totalNumbers = 5; // Total numbers on the board
 
-
+//TODO: Need to distribute numbers so that in each column they are in ascending order from top to bottom.
+// TODO: Need to distribute numbers such that each row has only 5 numbers.
 const generateRandomBoard = () => {
   const boardValues = []
   const board = Array.from({ length: boardSize }, () => Array(columnSize).fill(null));
@@ -64,7 +65,9 @@ const App = () => {
     const number = board[rowIndex][columnIndex];
     if (calledNumbers.includes(number)) {
       const cellId = `${rowIndex}-${columnIndex}`;
-      if (!selectedCells.includes(cellId)) {
+      //console.log("selectedCells:", selectedCells)
+      if (selectedCells.length == 0 || !selectedCells.includes(cellId)) {
+        console.log("selectedCell:", cellId)
         setSelectedCells((prevSelectedCells) => [...prevSelectedCells, cellId]);
         setErrorMessage(null);
         checkWin(rowIndex, columnIndex);
@@ -74,9 +77,11 @@ const App = () => {
     }
   };
 
+  //TODO: Fix win condition detection.
   const checkRowWin = (rowIndex) => {
     const row = board[rowIndex];
-    return row.every((cell, columnIndex) => selectedCells.includes(`${rowIndex}-${columnIndex}`));
+    console.log(row)
+    return row.every((cell, columnIndex) => row[columnIndex] == null || (row[columnIndex] != null && selectedCells.includes(`${rowIndex}-${columnIndex}`)));
   };
 
   const checkColumnWin = (columnIndex) => {
@@ -84,15 +89,19 @@ const App = () => {
   };
 
   const checkBoardWin = () => {
+    console.log("selectedCells.length:", selectedCells.length, ",totalNumbers:", totalNumbers)
     return selectedCells.length === totalNumbers;
   };
 
   const checkWin = (rowIndex, columnIndex) => {
+    console.log("Checking for wins:",rowIndex, columnIndex)
      if (checkRowWin(rowIndex)) {
       setWinningRows((prevWinningRows) => [...prevWinningRows, rowIndex]);
+      console.log("Winning row:", rowIndex)
     }
     if (checkColumnWin(columnIndex)) {
       setWinningColumns((prevWinningColumns) => [...prevWinningColumns, columnIndex]);
+      console.log("Winning column:", rowIndex)
     } 
     if (checkBoardWin()) {
       setWinningBoard(true);
@@ -110,6 +119,7 @@ const App = () => {
   };
   
   useEffect(() => {
+
     var randomNum = -1
     do {
       randomNum = Math.floor(Math.random() * (columnRanges[columnSize - 1].end - columnRanges[0].start + 1)) + columnRanges[0].start;
@@ -119,13 +129,21 @@ const App = () => {
     setErrorMessage(null);
 
     const interval = setInterval(() => {
+      //console.log("useEffect-selectedCells:", selectedCells)
       do{
       randomNum = Math.floor(Math.random() * (columnRanges[columnSize - 1].end - columnRanges[0].start + 1)) + columnRanges[0].start;
+      //console.log(":Generated random number:", randomNum)
       }while (calledNumbers.includes(randomNum))
+      //console.log("Selected random number:", randomNum)
+
       setCurrentNumber(randomNum);
       setCalledNumbers((prevCalledNumbers)=>[...prevCalledNumbers,randomNum])
+      console.log("selectedCells:",selectedCells)
       setErrorMessage(null);
-    }, 5000); // Change the number here to set the interval in milliseconds (e.g., 5000 = 5 seconds)
+      if (checkBoardWin()) {
+        setWinningBoard(true);
+      }
+    }, 1000); // Change the number here to set the interval in milliseconds (e.g., 5000 = 5 seconds)
 
     return () => {
       clearInterval(interval);
@@ -161,7 +179,7 @@ const App = () => {
       </View>
       <View style={styles.currentNumberContainer}>
         <Text style={styles.currentNumberText}>Current Number: {currentNumber}</Text>
-        { <Text style={styles.recentNumbers}>Previously called numbers:{calledNumbers.join(', ')}</Text> }
+        { <Text style={styles.recentNumbers}>Last 5 called numbers:{calledNumbers.slice(-5).join(', ')}</Text> }
       </View>
       {errorMessage && (
         <View style={styles.errorContainer}>
@@ -171,11 +189,13 @@ const App = () => {
       {winningBoard && (
         <View style={styles.messageContainer}>
           <Text style={styles.messageText}>Bingo! You won the board!</Text>
-          <TouchableOpacity style={styles.resetButton} onPress={resetGame}>
-            <Text style={styles.resetButtonText}>Reset</Text>
-          </TouchableOpacity>
         </View>
       )}
+      <View style={styles.messageContainer}>
+        <TouchableOpacity style={styles.resetButton} onPress={resetGame}>
+            <Text style={styles.resetButtonText}>Reset</Text>
+        </TouchableOpacity>
+      </View>
       {winningRows.length > 0 && (
         <View style={styles.messageContainer}>
           <Text style={styles.messageText}>Row Win:</Text>
